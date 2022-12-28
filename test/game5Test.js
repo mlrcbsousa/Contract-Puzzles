@@ -6,14 +6,26 @@ describe('Game5', function () {
     const Game = await ethers.getContractFactory('Game5');
     const game = await Game.deploy();
 
-    return { game };
+    const signers = [...Array(10).keys()].map(i => ethers.provider.getSigner(0));
+
+    return { game, signers };
   }
   it('should be a winner', async function () {
-    const { game } = await loadFixture(deployContractAndSetVariables);
+    const { game, signers } = await loadFixture(deployContractAndSetVariables);
 
     // good luck
 
-    await game.win();
+    signers.forEach(async (signer, i) => {
+      const address = await signer.getAddress();
+
+      try {
+        await game.connect(signer).win(address)
+      } catch (error) {
+        console.log(i);
+      }
+    })
+
+    // await game.win();
 
     // leave this assertion as-is
     assert(await game.isWon(), 'You did not win the game');
